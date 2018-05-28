@@ -1,10 +1,6 @@
 import React, {Component} from 'react';
 import SearchBar from './SearchBar';
-import './ProductTable';
-import './ProductCategoryRow';
-import './ProductRow';
 import ProductTable from './ProductTable';
-// import * as jsondata from './../data.js';
 
 class FilterableProductTable extends Component
 {
@@ -12,29 +8,45 @@ class FilterableProductTable extends Component
         super(props);
         this.state = {
             filtertext: '',
-            isStockOnly : false
+            isStockOnly : false,
+            data: []
         };
+        this.searchText = this.searchText.bind(this);
+        this.checkbox = this.checkbox.bind(this);
     }
-    render()
-    {
-        // let data = jsondata.getData();
-        // console.log(data);
-        let data = [
-            {category: "Sporting Goods", price: "$49.99", stocked: true, name: "Football"},
-            {category: "Sporting Goods", price: "$9.99", stocked: true, name: "Baseball"},
-            {category: "Sporting Goods", price: "$29.99", stocked: false, name: "Basketball"},
-            {category: "Electronics", price: "$99.99", stocked: true, name: "iPod Touch"},
-            {category: "Electronics", price: "$399.99", stocked: false, name: "iPhone 5"},
-            {category: "Electronics", price: "$199.99", stocked: true, name: "Nexus 7"}
-            ];
+
+    async componentWillMount() {
+        const res = await fetch('/data.json');
+        const data = await res.json()
+            this.setState({
+                data
+        });
+
+    }
+
+    searchText(e) {
+        this.setState({
+            filtertext: e.target.value
+        });
+    }
+
+    checkbox(e) {
+        this.setState((prevState) => ({
+            isStockOnly: !prevState.isStockOnly
+        }));
+    }
+
+    render() {
         let ret = (
             <div id = 'maintable'>
-            <SearchBar 
+            <SearchBar
                 filtertext = {this.state.filtertext}
                 isStockOnly = {this.state.isStockOnly}
+                searchText = {this.searchText}
+                checkbox = {this.checkbox}
             />
-            <ProductTable 
-            products = {data}
+            <ProductTable
+            products = {this.state.data}
             filtertext = {this.state.filtertext}
             isStockOnly = {this.state.isStockOnly}
             />

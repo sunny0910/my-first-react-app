@@ -4,27 +4,54 @@ import ProductRow from './ProductRow';
 
 class ProductTable extends Component
 {
-    render() {
-        let products = this.props.products;
-        let lastCategory = null;
-        let rows = [];
 
-        products.forEach(product => {
-            if (product.category != lastCategory) {
-                rows.push(
-                    <ProductCategoryRow 
+    constructor(props) {
+        super(props);
+        this.lastCategory = null;
+    }
+
+    renderRows(product, i) {
+            if (product.category !== this.lastCategory) {
+                this.lastCategory = product.category;
+                    return(
+                    <React.Fragment key = {i}>
+                    <ProductCategoryRow
                     category= {product.category}
-                    key = {product.category}/>
-                );
-            }
-            rows.push(
-                <ProductRow
+                    key = {`cat-${i}`}/>
+                    <ProductRow
                     product = {product}
-                    key = {product.name}
+                    key = {i}
                 />
-            );
-            lastCategory = product.category;
-        });
+
+                </React.Fragment>)
+
+            }
+            return(<ProductRow
+                    product = {product}
+                    key = {i}
+                />)
+    }
+    stockOnly(current, index) {
+        if (current.stocked) {
+            return current;
+        }
+    }
+    render() {
+        let {products} = this.props;
+        if (this.props.isStockOnly) {
+            products = products.filter(this.stockOnly);
+        }
+        let results = [];
+        if (this.props.filtertext !== '') {
+            products.filter(product => {
+                let regex = RegExp('^'+this.props.filtertext+'.*', 'i');
+                if (regex.test(product.name)) {
+                    results.push(product);
+                }
+            });
+        } else {
+            results = products;
+        }
 
         return (
             <div className = 'producttable'>
@@ -36,7 +63,7 @@ class ProductTable extends Component
                         </tr>
                     </thead>
                     <tbody>
-                        {rows}
+                    {results.map(this.renderRows.bind(this))}
                     </tbody>
                 </table>
             </div>
